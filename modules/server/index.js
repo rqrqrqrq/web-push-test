@@ -27,9 +27,18 @@ module.exports = async (req, res) => {
         return { done: false };
       }
 
-      const resp = await webpush.sendNotification(subscription, 'Hello yopta');
-
-      console.log(resp);
+      await webpush.sendNotification(
+        subscription,
+        JSON.stringify({
+          title: 'rqrqrqrq',
+          options: {
+            body: 'hey man',
+            data: {
+              url: '/yoba',
+            },
+          },
+        }),
+      );
 
       return { done: true };
     }
