@@ -1,3 +1,40 @@
+const KEY_URL = 'http://localhost:8080/key';
+const SUB_URL = 'http://localhost:8080/sub';
+
+initServiceWorker();
+
+function initServiceWorker() {
+  self.addEventListener('load', () => {
+    if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
+      navigator.serviceWorker.register('./sw.js');
+
+      navigator.serviceWorker.ready
+        .then(async reg => {
+          console.log('reg', reg);
+
+          await requestNotificationPermission();
+
+          const key = await fetch(KEY_URL).then(r => r.text());
+
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(key),
+          });
+
+          console.log('sub', JSON.stringify(sub));
+
+          await fetch(SUB_URL, {
+            method: 'POST',
+            body: JSON.stringify(sub),
+          });
+
+          console.log('subscription registred');
+        })
+        .catch(e => console.error(e));
+    }
+  });
+}
+
 function requestNotificationPermission() {
   return new Promise(function(resolve, reject) {
     const permissionResult = Notification.requestPermission(function(result) {
@@ -27,27 +64,18 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-navigator.serviceWorker
-  .register('./sw.js')
-  .then(async reg => {
-    console.log('reg', reg);
+function checkServiceWorkerSupport() {
+  if ('serviceWorker' in navigator) {
+    return true;
+  }
 
-    await requestNotificationPermission();
+  return false;
+}
 
-    const key = await fetch('http://localhost:8080/key').then(r => r.text());
+function checkPushManagerSupport() {
+  if ('PushManager' in self) {
+    return true;
+  }
 
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(key),
-    });
-
-    console.log('sub', JSON.stringify(sub));
-
-    await fetch('http://localhost:8080/sub', {
-      method: 'POST',
-      body: JSON.stringify(sub),
-    });
-
-    console.log('subscription registred');
-  })
-  .catch(e => console.error(e));
+  return false;
+}
