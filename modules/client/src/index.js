@@ -6,29 +6,39 @@ initServiceWorker();
 function initServiceWorker() {
   self.addEventListener('load', () => {
     if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
-      navigator.serviceWorker.register('./sw.js');
+      navigator.serviceWorker.register('./sw.js').catch(e => {
+        console.error('Unable to register serviceworker', e);
+        throw e;
+      });
 
       navigator.serviceWorker.ready
         .then(async reg => {
-          console.log('reg', reg);
-
           await requestNotificationPermission();
 
-          const key = await fetch(KEY_URL).then(r => r.text());
+          const key = await fetch(KEY_URL)
+            .then(r => r.text())
+            .catch(e => {
+              console.error('Unable to get public key for notifications', e);
+              throw e;
+            });
 
-          const sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(key),
-          });
-
-          console.log('sub', JSON.stringify(sub));
+          const sub = await reg.pushManager
+            .subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(key),
+            })
+            .catch(e => {
+              console.error('Unable to subscribe', e);
+              throw e;
+            });
 
           await fetch(SUB_URL, {
             method: 'POST',
             body: JSON.stringify(sub),
+          }).catch(e => {
+            console.error('Unable to save subscription', e);
+            throw e;
           });
-
-          console.log('subscription registred');
         })
         .catch(e => console.error(e));
     }
@@ -46,7 +56,7 @@ function requestNotificationPermission() {
     }
   }).then(function(permissionResult) {
     if (permissionResult !== 'granted') {
-      throw new Error("We weren't granted permission.");
+      throw new Error('Notification permissions rejected');
     }
   });
 }
