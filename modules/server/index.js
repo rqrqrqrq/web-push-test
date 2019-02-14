@@ -33,22 +33,29 @@ module.exports = async (req, res) => {
         return { done: false };
       }
 
+      const data = {
+        url: '/yoba',
+        pageEvent: {
+          type: 'OPEN_DIALOG',
+          payload: {
+            dialogId: 1,
+          },
+        },
+      };
+
+      const notification = {
+        title: 'rqrqrqrq' + Math.random(),
+        options: {
+          body: 'hey man' + Math.random(),
+          tag: '1',
+          renotify: true,
+          data,
+        },
+      };
+
       await webpush.sendNotification(
         subscription,
-        JSON.stringify({
-          title: 'rqrqrqrq' + Math.random(),
-          options: {
-            body: 'hey man' + Math.random(),
-            data: {
-              url: '/yoba',
-              yoba: {
-                a: 1,
-              },
-            },
-            tag: '1',
-            renotify: true,
-          },
-        }),
+        JSON.stringify(notification),
       );
 
       return { done: true };

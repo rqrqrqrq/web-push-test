@@ -28,7 +28,8 @@ self.addEventListener('notificationclick', function(event) {
 
       return self.clients.openWindow(url).then(c => {
         c.postMessage({
-          type: 'new-msg',
+          type: 'NOTIFICATION_CLICK',
+          payload: event.notification.data.pageEvent,
         });
         console.log('message posted');
       });
