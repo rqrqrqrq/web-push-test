@@ -10,4 +10,12 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   console.log('clicked ', event.notification.data.url);
+
+  const promiseChain = self.clients
+    .matchAll({
+      type: 'window',
+    })
+    .then(clients => console.log(clients));
+
+  event.waitUntil(promiseChain);
 });

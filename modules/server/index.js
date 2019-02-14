@@ -6,7 +6,13 @@ const webpush = require('web-push');
 const PUBLIC_KEY = process.env.PUBLIC_KEY;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-webpush.setVapidDetails('mailto:rqtdfh@gmail.com', PUBLIC_KEY, PRIVATE_KEY);
+const keys = webpush.generateVAPIDKeys();
+
+webpush.setVapidDetails(
+  'mailto:rqtdfh@gmail.com',
+  keys.publicKey,
+  keys.privateKey,
+);
 
 let subscription = null;
 
@@ -44,7 +50,7 @@ module.exports = async (req, res) => {
     }
 
     case '/key': {
-      return PUBLIC_KEY;
+      return keys.publicKey;
     }
   }
 };

@@ -22,15 +22,16 @@ function initServiceWorker() {
               throw e;
             });
 
-          const sub = await reg.pushManager
-            .subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(key),
-            })
-            .catch(e => {
-              console.error('Unable to subscribe', e);
-              throw e;
-            });
+          const sub = await subscribe(key).catch(() =>
+            reg.pushManager
+              .getSubscription()
+              .then(sub => sub.unsubscribe())
+              .then(() => subscribe(key))
+              .catch(e => {
+                console.error('Unable to subscribe', e);
+                throw e;
+              }),
+          );
 
           await fetch(SUB_URL, {
             method: 'POST',
@@ -39,6 +40,13 @@ function initServiceWorker() {
             console.error('Unable to save subscription', e);
             throw e;
           });
+
+          function subscribe(key) {
+            return reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(key),
+            });
+          }
         })
         .catch(e => console.error(e));
     }
