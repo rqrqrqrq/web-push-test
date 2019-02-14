@@ -9,7 +9,7 @@
   "dependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel ./src/index.html"
+    "start": "parcel ./src/index.html --no-hmr"
   },
   "browserslist": [
     "last 1 chrome version"
