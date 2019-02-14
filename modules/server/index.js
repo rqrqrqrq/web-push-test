@@ -36,12 +36,17 @@ module.exports = async (req, res) => {
       await webpush.sendNotification(
         subscription,
         JSON.stringify({
-          title: 'rqrqrqrq',
+          title: 'rqrqrqrq' + Math.random(),
           options: {
-            body: 'hey man',
+            body: 'hey man' + Math.random(),
             data: {
               url: '/yoba',
+              yoba: {
+                a: 1,
+              },
             },
+            tag: '1',
+            renotify: true,
           },
         }),
       );

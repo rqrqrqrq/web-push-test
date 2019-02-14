@@ -1,56 +1,63 @@
 const KEY_URL = 'http://localhost:8080/key';
 const SUB_URL = 'http://localhost:8080/sub';
 
+console.log('load');
+
 initServiceWorker();
 
 function initServiceWorker() {
-  self.addEventListener('load', () => {
-    if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
+  if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
+    navigator.serviceWorker.addEventListener('message', e => {
+      console.log(e.data);
+    });
+    console.log('event registred');
+
+    navigator.serviceWorker.ready
+      .then(async reg => {
+        await requestNotificationPermission();
+
+        const key = await fetch(KEY_URL)
+          .then(r => r.text())
+          .catch(e => {
+            console.error('Unable to get public key for notifications', e);
+            throw e;
+          });
+
+        const sub = await subscribe(key).catch(() =>
+          reg.pushManager
+            .getSubscription()
+            .then(sub => sub.unsubscribe())
+            .then(() => subscribe(key))
+            .catch(e => {
+              console.error('Unable to subscribe', e);
+              throw e;
+            }),
+        );
+
+        await fetch(SUB_URL, {
+          method: 'POST',
+          body: JSON.stringify(sub),
+        }).catch(e => {
+          console.error('Unable to save subscription', e);
+          throw e;
+        });
+
+        function subscribe(key) {
+          return reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(key),
+          });
+        }
+      })
+      .catch(e => console.error(e));
+
+    window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(e => {
         console.error('Unable to register serviceworker', e);
         throw e;
       });
-
-      navigator.serviceWorker.ready
-        .then(async reg => {
-          await requestNotificationPermission();
-
-          const key = await fetch(KEY_URL)
-            .then(r => r.text())
-            .catch(e => {
-              console.error('Unable to get public key for notifications', e);
-              throw e;
-            });
-
-          const sub = await subscribe(key).catch(() =>
-            reg.pushManager
-              .getSubscription()
-              .then(sub => sub.unsubscribe())
-              .then(() => subscribe(key))
-              .catch(e => {
-                console.error('Unable to subscribe', e);
-                throw e;
-              }),
-          );
-
-          await fetch(SUB_URL, {
-            method: 'POST',
-            body: JSON.stringify(sub),
-          }).catch(e => {
-            console.error('Unable to save subscription', e);
-            throw e;
-          });
-
-          function subscribe(key) {
-            return reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(key),
-            });
-          }
-        })
-        .catch(e => console.error(e));
-    }
-  });
+    });
+  }
 }
 
 function requestNotificationPermission() {

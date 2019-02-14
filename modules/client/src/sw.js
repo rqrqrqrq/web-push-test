@@ -1,8 +1,7 @@
 self.addEventListener('push', function(event) {
-  console.log(event);
-  console.log(JSON.stringify(event));
-
   const data = event.data.json();
+
+  console.log(data);
 
   event.waitUntil(self.registration.showNotification(data.title, data.options));
 });
@@ -11,11 +10,29 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   console.log('clicked ', event.notification.data.url);
 
-  const promiseChain = self.clients
+  const url = new URL(event.notification.data.url, self.location.origin);
+
+  const promise = self.clients
     .matchAll({
       type: 'window',
+      includeUncontrolled: true,
     })
-    .then(clients => console.log(clients));
+    .then(clients => {
+      const matchedClient = clients.find(c => c.url === url.href);
 
-  event.waitUntil(promiseChain);
+      console.log(matchedClient);
+
+      if (matchedClient) {
+        return matchedClient.focus();
+      }
+
+      return self.clients.openWindow(url).then(c => {
+        c.postMessage({
+          type: 'new-msg',
+        });
+        console.log('message posted');
+      });
+    });
+
+  event.waitUntil(promise);
 });
