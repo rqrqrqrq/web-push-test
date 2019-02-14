@@ -1,7 +1,7 @@
 const KEY_URL = 'http://localhost:8080/key';
 const SUB_URL = 'http://localhost:8080/sub';
 
-console.log('load');
+console.log('script load');
 
 initServiceWorker();
 
@@ -14,12 +14,16 @@ function initServiceWorker() {
 
     navigator.serviceWorker.ready
       .then(async reg => {
+        console.log('sw registred');
+
         await requestNotificationPermission();
 
         const key = await fetch(KEY_URL)
           .then(r => r.text())
           .catch(e => {
-            console.error('Unable to get public key for notifications', e);
+            e.message =
+              'Unable to get public key for notifications' + e.message;
+
             throw e;
           });
 
@@ -29,7 +33,8 @@ function initServiceWorker() {
             .then(sub => sub.unsubscribe())
             .then(() => subscribe(key))
             .catch(e => {
-              console.error('Unable to subscribe', e);
+              e.message = 'Unable to subscribe' + e.message;
+
               throw e;
             }),
         );
@@ -38,7 +43,8 @@ function initServiceWorker() {
           method: 'POST',
           body: JSON.stringify(sub),
         }).catch(e => {
-          console.error('Unable to save subscription', e);
+          e.message = 'Unable to save subscription' + e.message;
+
           throw e;
         });
 

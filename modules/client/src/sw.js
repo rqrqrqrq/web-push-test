@@ -8,7 +8,6 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  console.log('clicked ', event.notification.data.url);
 
   const url = new URL(event.notification.data.url, self.location.origin);
 
@@ -23,16 +22,20 @@ self.addEventListener('notificationclick', function(event) {
       console.log(matchedClient);
 
       if (matchedClient) {
+        sendMessage(matchedClient);
+
         return matchedClient.focus();
       }
 
-      return self.clients.openWindow(url).then(c => {
-        c.postMessage({
+      return self.clients.openWindow(url).then(c => sendMessage(c));
+
+      function sendMessage(client) {
+        client.postMessage({
           type: 'NOTIFICATION_CLICK',
           payload: event.notification.data.pageEvent,
         });
         console.log('message posted');
-      });
+      }
     });
 
   event.waitUntil(promise);
