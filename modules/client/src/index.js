@@ -51,7 +51,7 @@ function initServiceWorker() {
       })
       .catch(e => console.error(e));
 
-    window.addEventListener('load', () => {
+    self.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(e => {
         console.error('Unable to register serviceworker', e);
         throw e;
