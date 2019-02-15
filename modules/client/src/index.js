@@ -14,9 +14,7 @@ function initServiceWorker() {
 
       console.log('handler reg');
 
-      navigator.serviceWorker.controller.postMessage({
-        type: 'GET_MESSAGES',
-      });
+      getSwMessages();
     }, 5000);
 
     navigator.serviceWorker.ready
@@ -69,6 +67,14 @@ function initServiceWorker() {
         console.error('Unable to register serviceworker', e);
         throw e;
       });
+    });
+  }
+}
+
+function getSwMessages() {
+  if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'GET_MESSAGES',
     });
   }
 }
