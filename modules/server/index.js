@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
 
       const data = {
         url: '/yoba',
-        pageEvent: {
+        action: {
           type: 'OPEN_DIALOG',
           payload: {
             dialogId: 1,

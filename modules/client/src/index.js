@@ -7,10 +7,17 @@ initServiceWorker();
 
 function initServiceWorker() {
   if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
-    navigator.serviceWorker.addEventListener('message', e => {
-      console.log(e.data);
-    });
-    console.log('event registred');
+    setTimeout(() => {
+      navigator.serviceWorker.addEventListener('message', e => {
+        console.log(e.data);
+      });
+
+      console.log('handler reg');
+
+      navigator.serviceWorker.controller.postMessage({
+        type: 'GET_MESSAGES',
+      });
+    }, 5000);
 
     navigator.serviceWorker.ready
       .then(async reg => {
