@@ -72,7 +72,11 @@ function initServiceWorker() {
 }
 
 function getSwMessages() {
-  if (checkServiceWorkerSupport() && checkPushManagerSupport()) {
+  if (
+    checkServiceWorkerSupport() &&
+    checkPushManagerSupport() &&
+    navigator.serviceWorker.controller
+  ) {
     navigator.serviceWorker.controller.postMessage({
       type: 'GET_MESSAGES',
     });
