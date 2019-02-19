@@ -5,7 +5,7 @@ self.addEventListener('push', function(event) {
 
   const url = new URL(notification.options.data.url, self.location.origin);
 
-  const promise = clients
+  const promise = self.clients
     .matchAll({
       type: 'window',
       includeUncontrolled: true,
