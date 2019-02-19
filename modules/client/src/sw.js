@@ -1,11 +1,32 @@
 const buffer = new Map();
 
 self.addEventListener('push', function(event) {
-  const data = event.data.json();
+  const notification = event.data.json();
 
-  console.log(data);
+  const url = new URL(notification.options.data.url, self.location.origin);
 
-  event.waitUntil(self.registration.showNotification(data.title, data.options));
+  const promise = clients
+    .matchAll({
+      type: 'window',
+      includeUncontrolled: true,
+    })
+    .then(clients => {
+      const focusedClient = clients.find(c => c.focused && c.url === url.href);
+
+      if (
+        focusedClient &&
+        !notification.options.data.__SHOW_IN_FOCUSED_CLIENT__
+      ) {
+        return;
+      }
+
+      return self.registration.showNotification(
+        notification.title,
+        notification.options,
+      );
+    });
+
+  event.waitUntil(promise);
 });
 
 self.addEventListener('notificationclick', function(event) {
