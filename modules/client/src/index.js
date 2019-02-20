@@ -32,11 +32,13 @@ function initServiceWorker() {
             throw e;
           });
 
-        const sub = await subscribe(key).catch(() =>
+        const applicationServerKey = urlBase64ToUint8Array(key);
+
+        const sub = await subscribe().catch(() =>
           reg.pushManager
             .getSubscription()
             .then(sub => sub.unsubscribe())
-            .then(() => subscribe(key))
+            .then(() => subscribe())
             .catch(e => {
               e.message = 'Unable to subscribe' + e.message;
 
@@ -53,10 +55,10 @@ function initServiceWorker() {
           throw e;
         });
 
-        function subscribe(key) {
+        function subscribe() {
           return reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(key),
+            applicationServerKey,
           });
         }
       })
@@ -99,16 +101,26 @@ function requestNotificationPermission() {
 }
 
 function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  try {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
 
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  } catch (e) {
+    e.message = `Unable to convert server public key to Uint8Array. ${
+      e.message
+    }`;
+
+    throw e;
   }
-  return outputArray;
 }
 
 function checkServiceWorkerSupport() {
