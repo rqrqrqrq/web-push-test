@@ -27,7 +27,7 @@ function initServiceWorker() {
           .then(r => r.text())
           .catch(e => {
             e.message =
-              'Unable to get public key for notifications' + e.message;
+              'Unable to get public key for notifications. ' + e.message;
 
             throw e;
           });
@@ -40,7 +40,7 @@ function initServiceWorker() {
             .then(sub => sub.unsubscribe())
             .then(() => subscribe())
             .catch(e => {
-              e.message = 'Unable to subscribe' + e.message;
+              e.message = 'Unable to subscribe. ' + e.message;
 
               throw e;
             }),
@@ -50,7 +50,7 @@ function initServiceWorker() {
           method: 'POST',
           body: JSON.stringify(sub),
         }).catch(e => {
-          e.message = 'Unable to save subscription' + e.message;
+          e.message = 'Unable to save subscription. ' + e.message;
 
           throw e;
         });

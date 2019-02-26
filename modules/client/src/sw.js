@@ -1,5 +1,9 @@
 const buffer = new Map();
 
+self.addEventListener('install', function() {
+  self.skipWaiting();
+});
+
 self.addEventListener('push', function(event) {
   const notification = event.data.json();
 
